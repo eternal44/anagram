@@ -1,22 +1,38 @@
-var fs = require('fs');
+var async = require('async')
+var helper = require('./helper')
 
-function get_line(filename, line_no, callback) {
-  fs.readFile(filename, function (err, data) {
-    if (err) throw err;
+function findAnagram(word) {
+  async.waterfall([
+    function(done) {
+      helper.arrayifyFile('./Word_List.txt', function(err, lines) {
+        if(err)
+          return done(err)
 
-    // Data is a buffer that we need to convert to a string
-    // Improvement: loop over the buffer and stop when the line is reached
-    var lines = data.toString('utf-8').split("\n");
+        done(null, lines)
+      })
+    },
 
-    if(+line_no > lines.length){
-      return callback('File end reached without finding line', null);
-    }
+    function(lines, done) {
+      var perms = helper.findPermutations(word)
+      done(null, lines, perms)
+    },
 
-    callback(null, lines[+line_no]);
-  });
+    function(lines, permutations, done) {
+      var possibleAnagramSets = []
+      for(var i = 0; i < permutations.length; i++) {
+        if(helper.wordSearch(lines, permutations[i]))
+          possibleAnagramSets.push(permutations[i])
+      }
+      done(possibleAnagramSets)
+    },
+
+  ], function(err, anagrams) {
+    if(err)
+      return console.err(err)
+
+
+    // console.log(lines, permutations)
+  })
 }
 
-get_line('./Word_List.txt', 9, function(err, line){
-  console.log('The line: ' + line);
-})
-
+findAnagram('silent')
