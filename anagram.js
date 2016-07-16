@@ -3,6 +3,8 @@ var helper = require('./helper')
 
 function findAnagram(word) {
   async.waterfall([
+
+    // turn word list into an array so we can look up words
     function(done) {
       helper.arrayifyFile('./Word_List.txt', function(err, lines) {
         if(err)
@@ -12,11 +14,13 @@ function findAnagram(word) {
       })
     },
 
+    // generate permutations of words in anagram
     function(lines, done) {
       var perms = helper.findPermutations(word)
       done(null, lines, perms)
     },
 
+    // search through word list to validate permutation
     function(lines, permutations, done) {
       var possibleAnagramSets = []
       for(var i = 0; i < permutations.length; i++) {
@@ -30,6 +34,10 @@ function findAnagram(word) {
     if(err)
       return console.err(err)
 
+    // TODO:  
+    // recurse through available characters
+    //   create permutations of subsets of characters
+    //   push results into result array
 
     // console.log(lines, permutations)
   })
